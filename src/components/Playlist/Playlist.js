@@ -339,12 +339,28 @@ const   musicList = [
 const Playlist = () => {
     const [index, setIndex] = useState(0);
     const [currentTime, setCurrentTime] = useState('0:0');
-    const [pause, setPause] = useState(false);
+    const [pause, setPause] = useState({p: true});
     const playerRef = useRef();
     const timelineRef = useRef();
     const playheadRef = useRef();
     const hoverPlayheadRef = useRef();
 
+    useEffect(() => {
+        console.log(pause.p)
+        if (!pause.p) {
+            playerRef.current.play();
+        } else {
+            playerRef.current.pause();
+        }
+    }, [pause])
+    
+    useEffect(() => {
+        setPause({p:false})
+    },[index])
+
+    useEffect(() => {
+        setPause({p:true})
+    },[])
     const changeCurrentTime = (e) => {
         const duration = playerRef.current.duration();
         const playheadWidth = timelineRef.current.offsetWidth;
@@ -406,31 +422,19 @@ const Playlist = () => {
     const nextSong = () => { 
         setIndex((index + 1) % musicList.length)
         updatePlayer();
-        if(pause){
-            playerRef.current.play();
-        }
     };
      const prevSong = () => {
-        setIndex((index + musicList.length - 1) % musicList.length);
         updatePlayer();
-        if(pause){
-            playerRef.current.play();
-        }
+        setIndex((index + musicList.length - 1) % musicList.length);
     };
-    const playOrPause = () =>{
-        if( !pause ){
-            playerRef.current.play();
-        }else{
-           playerRef.current.pause();
-        }
-        setPause(pre => !pre)
+    const playOrPause = () => {
+        const cur = !pause.p;
+        console.log(cur)
+        setPause({p:!pause.p})
     }
     const  clickAudio = (key) =>{
-      setIndex(key)
-       updatePlayer();
-        if(pause){
-            playerRef.current.play();
-        }
+     updatePlayer();
+     setIndex(key)
     }
     const currentSong = musicList[index];
 
@@ -454,7 +458,7 @@ const Playlist = () => {
                             
                             <button onClick={playOrPause} className="play current-btn">
                                 {
-                                (!pause) ? <i className="fas fa-play"></i>
+                                (pause.p) ? <i className="fas fa-play"></i>
                                 :<i class="fas fa-pause"></i>
                                 }
                             </button>
@@ -475,7 +479,7 @@ const Playlist = () => {
                 <div className="play-list" >
                     {musicList.map( (music, key=0) =>
                         <div key={key}
-                            onClick={()=>this.clickAudio(key)}
+                            onClick={()=>clickAudio(key)}
                             className={"track " +
                                 (index === key && !pause ?'current-audio':'') +
                                 (index === key && pause ?'play-now':'')}
